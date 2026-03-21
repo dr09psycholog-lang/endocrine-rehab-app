@@ -1,4 +1,4 @@
-name: Take Screenshot
+name: Take Screenshots
 on:
   workflow_dispatch:
 permissions:
@@ -14,7 +14,7 @@ jobs:
           node-version: '20'
       - name: Install Puppeteer
         run: npm install puppeteer
-      - name: Take screenshot
+      - name: Take screenshots
         run: |
           node -e "
           const puppeteer = require('puppeteer');
@@ -22,8 +22,22 @@ jobs:
             const browser = await puppeteer.launch({args: ['--no-sandbox']});
             const page = await browser.newPage();
             await page.setViewport({width: 600, height: 1200});
-            await page.goto('https://dr09psycholog-lang.github.io/endocrine-rehab-app/', {waitUntil: 'networkidle2', timeout: 60000});
+            const url = 'https://dr09psycholog-lang.github.io/endocrine-rehab-app/';
+            await page.goto(url, {waitUntil: 'networkidle2', timeout: 60000});
             await page.screenshot({path: 'screenshot_600x1200.png', fullPage: false});
+            const tabs = await page.$$('button');
+            for (const t of tabs) {
+              const txt = await page.evaluate(el => el.textContent, t);
+              if (txt && txt.trim() === 'История') { await t.click(); break; }
+            }
+            await new Promise(r => setTimeout(r, 800));
+            await page.screenshot({path: 'screenshot2_600x1200.png', fullPage: false});
+            for (const t2 of await page.$$('button')) {
+              const txt2 = await page.evaluate(el => el.textContent, t2);
+              if (txt2 && txt2.trim() === 'Заболевания') { await t2.click(); break; }
+            }
+            await new Promise(r => setTimeout(r, 800));
+            await page.screenshot({path: 'screenshot3_600x1200.png', fullPage: false});
             await browser.close();
             console.log('Done');
           })();
@@ -32,6 +46,6 @@ jobs:
         run: |
           git config user.email "action@github.com"
           git config user.name "GitHub Action"
-          git add screenshot_600x1200.png
-          git commit -m "Add real screenshot 600x1200" || echo "Nothing to commit"
+          git add screenshot_600x1200.png screenshot2_600x1200.png screenshot3_600x1200.png
+          git commit -m "Add 3 screenshots" || echo "Nothing to commit"
           git push https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }}.git HEAD:main
