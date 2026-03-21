@@ -1,21 +1,37 @@
-name: Download Screenshot
+name: Take Screenshot
 on:
   workflow_dispatch:
 permissions:
   contents: write
 jobs:
-  download:
+  screenshot:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - name: Download screenshot 600x1200
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+      - name: Install Puppeteer
+        run: npm install puppeteer
+      - name: Take screenshot
         run: |
-          curl -L --max-time 60 "https://image.thum.io/get/width/600/viewportWidth/600/viewportHeight/1200/https://dr09psycholog-lang.github.io/endocrine-rehab-app/" -o screenshot_600x1200.png
-          ls -la screenshot_600x1200.png
+          node -e "
+          const puppeteer = require('puppeteer');
+          (async () => {
+            const browser = await puppeteer.launch({args: ['--no-sandbox']});
+            const page = await browser.newPage();
+            await page.setViewport({width: 600, height: 1200});
+            await page.goto('https://dr09psycholog-lang.github.io/endocrine-rehab-app/', {waitUntil: 'networkidle2', timeout: 60000});
+            await page.screenshot({path: 'screenshot_600x1200.png', fullPage: false});
+            await browser.close();
+            console.log('Done');
+          })();
+          "
       - name: Commit and push
         run: |
           git config user.email "action@github.com"
           git config user.name "GitHub Action"
           git add screenshot_600x1200.png
-          git commit -m "Add screenshot 600x1200" || echo "Nothing to commit"
+          git commit -m "Add real screenshot 600x1200" || echo "Nothing to commit"
           git push https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }}.git HEAD:main
