@@ -1,0 +1,18 @@
+name: Download Screenshot
+on:
+  workflow_dispatch:
+jobs:
+  download:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - name: Download screenshot 600x1200
+        run: |
+          curl -L "https://image.thum.io/get/width/600/viewportWidth/600/viewportHeight/1200/https://dr09psycholog-lang.github.io/endocrine-rehab-app/" -o screenshot_600x1200.png
+      - name: Commit and push
+        run: |
+          git config user.email "action@github.com"
+          git config user.name "GitHub Action"
+          git add screenshot_600x1200.png
+          git commit -m "Add screenshot 600x1200"
+          git push
