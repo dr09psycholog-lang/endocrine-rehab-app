@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Реабилитация Эндокринных заболеваний</title>
+    <script src="https://unpkg.com/@vkontakte/vk-bridge/dist/browser.min.js"></script>
     <style>
         :root {
             --color-cream-50: rgba(252, 252, 249, 1);
@@ -371,6 +372,11 @@
     </div>
 
     <script>
+        // Инициализация VK Bridge — обязательно для работы VK Mini App
+        if (window.vkBridge) {
+            vkBridge.send('VKWebAppInit').catch(function(e) { console.log('VK Bridge init:', e); });
+        }
+
         const tabs = document.querySelectorAll('.tab');
         const contents = document.querySelectorAll('.content');
 
