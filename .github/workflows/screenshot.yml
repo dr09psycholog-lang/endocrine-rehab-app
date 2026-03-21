@@ -14,9 +14,9 @@ jobs:
           node-version: '20'
       - name: Install Puppeteer
         run: npm install puppeteer
-      - name: Take screenshots
+      - name: Write script
         run: |
-          node -e "
+          cat > take_screenshots.js << 'JSEOF'
           const puppeteer = require('puppeteer');
           (async () => {
             const browser = await puppeteer.launch({args: ['--no-sandbox']});
@@ -25,23 +25,26 @@ jobs:
             const url = 'https://dr09psycholog-lang.github.io/endocrine-rehab-app/';
             await page.goto(url, {waitUntil: 'networkidle2', timeout: 60000});
             await page.screenshot({path: 'screenshot_600x1200.png', fullPage: false});
-            const tabs = await page.$$('button');
-            for (const t of tabs) {
-              const txt = await page.evaluate(el => el.textContent, t);
-              if (txt && txt.trim() === 'История') { await t.click(); break; }
+            const btns = await page.$$('button');
+            for (const b of btns) {
+              const t = await page.evaluate(el => el.textContent.trim(), b);
+              if (t === '\u0418\u0441\u0442\u043e\u0440\u0438\u044f') { await b.click(); break; }
             }
-            await new Promise(r => setTimeout(r, 800));
+            await new Promise(r => setTimeout(r, 1000));
             await page.screenshot({path: 'screenshot2_600x1200.png', fullPage: false});
-            for (const t2 of await page.$$('button')) {
-              const txt2 = await page.evaluate(el => el.textContent, t2);
-              if (txt2 && txt2.trim() === 'Заболевания') { await t2.click(); break; }
+            const btns2 = await page.$$('button');
+            for (const b2 of btns2) {
+              const t2 = await page.evaluate(el => el.textContent.trim(), b2);
+              if (t2 === '\u0417\u0430\u0431\u043e\u043b\u0435\u0432\u0430\u043d\u0438\u044f') { await b2.click(); break; }
             }
-            await new Promise(r => setTimeout(r, 800));
+            await new Promise(r => setTimeout(r, 1000));
             await page.screenshot({path: 'screenshot3_600x1200.png', fullPage: false});
             await browser.close();
             console.log('Done');
           })();
-          "
+          JSEOF
+      - name: Take screenshots
+        run: node take_screenshots.js
       - name: Commit and push
         run: |
           git config user.email "action@github.com"
